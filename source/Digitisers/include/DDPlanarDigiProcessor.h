@@ -108,6 +108,7 @@ protected:
   const dd4hep::rec::SurfaceMap* _map ;
 
   bool _forceHitsOntoSurface  ;
+  bool _sumCellEnergy  ;
   double _minEnergy ;
 
   std::vector<TH1F*> _h ;

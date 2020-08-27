@@ -109,6 +109,10 @@ DDPlanarDigiProcessor::DDPlanarDigiProcessor() : Processor("DDPlanarDigiProcesso
                               _minEnergy,
                               double(0.0) );
 
+  registerProcessorParameter( "SumCellEnergy" , 
+                              "Merges tracker hits that occur in the same cellID, summing their energy deposition (default: false)" ,
+                              _sumCellEnergy ,
+                              bool(false) );
   
   // setup the list of supported detectors
   
@@ -451,8 +455,21 @@ void DDPlanarDigiProcessor::processEvent( LCEvent * evt ) {
       // Add hit to collection
       //**************************************************************************    
       
-      trkhitVec->addElement( trkHit ) ; 
-      
+      if(_sumCellEnergy){
+        bool isUniqueCell = true;
+        for(int j = 0; j < trkhitVec->getNumberOfElements(); ++j){
+          TrackerHitPlaneImpl* tmpTrkHit = (TrackerHitPlaneImpl*) trkhitVec->getElementAt(j);
+          if( tmpTrkHit->getCellID0() == trkHit->getCellID0() ){
+            tmpTrkHit->setEDep( tmpTrkHit->getEDep()+trkHit->getEDep() );
+            isUniqueCell = false;
+            break;
+          }
+        }
+        if(isUniqueCell) trkhitVec->addElement( trkHit ) ;
+      } else {
+        trkhitVec->addElement( trkHit ) ; 
+      }
+
       ++nCreatedHits;
       
       streamlog_out(DEBUG3) << "-------------------------------------------------------" << std::endl;
